@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'solid_observer.dart';
+
 /// A reactive state management base class for Flutter.
 ///
 /// Supports multiple distinct State types, where each type `S` holds an
@@ -13,8 +15,16 @@ import 'package:flutter/foundation.dart';
 /// }
 /// ```
 abstract class Solid<State> extends ChangeNotifier {
+  /// Global observer that receives lifecycle callbacks for every [Solid].
+  ///
+  /// ```dart
+  /// Solid.observer = AppObserver();
+  /// ```
+  static SolidObserver observer = SolidObserver();
+
   Solid(State initialState) {
     _states[State] = initialState;
+    Solid.observer.onCreate(this);
   }
 
   final Map<Type, dynamic> _states = {};
@@ -48,6 +58,7 @@ abstract class Solid<State> extends ChangeNotifier {
     if (identical(previous, newState)) return;
     _states[S] = newState;
     onChange(previous, newState);
+    Solid.observer.onChange(this, previous, newState);
     notifyListeners();
   }
 
@@ -66,7 +77,7 @@ abstract class Solid<State> extends ChangeNotifier {
 
   /// Called on every successful [push] **before** listeners are notified.
   ///
-  /// Override this for logging, analytics, or debugging:
+  /// Override this for per-instance logging, analytics, or debugging:
   ///
   /// ```dart
   /// @override
@@ -78,4 +89,10 @@ abstract class Solid<State> extends ChangeNotifier {
   @protected
   @mustCallSuper
   void onChange(dynamic previous, dynamic next) {}
+
+  @override
+  void dispose() {
+    Solid.observer.onDispose(this);
+    super.dispose();
+  }
 }

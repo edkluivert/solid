@@ -260,10 +260,12 @@ void main() {
     testWidgets('renders initial state', (tester) async {
       final vm = _CounterVm();
       await tester.pumpWidget(_wrap(
-        SolidBuilder<_CounterVm, _CounterState>(
+        SolidProvider<_CounterVm>.value(
           value: vm,
-          builder: (_, state) =>
-              Text('${state.count}', textDirection: TextDirection.ltr),
+          child: SolidBuilder<_CounterVm, _CounterState>(
+            builder: (_, state) =>
+                Text('${state.count}', textDirection: TextDirection.ltr),
+          ),
         ),
       ));
       expect(find.text('0'), findsOneWidget);
@@ -273,10 +275,12 @@ void main() {
     testWidgets('rebuilds when push fires', (tester) async {
       final vm = _CounterVm();
       await tester.pumpWidget(_wrap(
-        SolidBuilder<_CounterVm, _CounterState>(
+        SolidProvider<_CounterVm>.value(
           value: vm,
-          builder: (_, state) =>
-              Text('${state.count}', textDirection: TextDirection.ltr),
+          child: SolidBuilder<_CounterVm, _CounterState>(
+            builder: (_, state) =>
+                Text('${state.count}', textDirection: TextDirection.ltr),
+          ),
         ),
       ));
       vm.increment();
@@ -308,13 +312,15 @@ void main() {
       int buildCount = 0;
 
       await tester.pumpWidget(_wrap(
-        SolidListener<_CounterVm, _CounterState>(
+        SolidProvider<_CounterVm>.value(
           value: vm,
-          listener: (context, state) => calls.add(state.count),
-          child: Builder(builder: (_) {
-            buildCount++;
-            return const SizedBox();
-          }),
+          child: SolidListener<_CounterVm, _CounterState>(
+            listener: (context, state) => calls.add(state.count),
+            child: Builder(builder: (_) {
+              buildCount++;
+              return const SizedBox();
+            }),
+          ),
         ),
       ));
 
@@ -358,13 +364,15 @@ void main() {
       int buildCount = 0;
 
       await tester.pumpWidget(_wrap(
-        SolidConsumer<_CounterVm, _CounterState>(
+        SolidProvider<_CounterVm>.value(
           value: vm,
-          listener: (context, state) => listenerCalls.add(state.count),
-          builder: (context, state) {
-            buildCount++;
-            return Text('${state.count}', textDirection: TextDirection.ltr);
-          },
+          child: SolidConsumer<_CounterVm, _CounterState>(
+            listener: (context, state) => listenerCalls.add(state.count),
+            builder: (context, state) {
+              buildCount++;
+              return Text('${state.count}', textDirection: TextDirection.ltr);
+            },
+          ),
         ),
       ));
 
@@ -401,22 +409,25 @@ void main() {
     testWidgets('isLoading state shows during async operation', (tester) async {
       final vm = _LoginVm();
       await tester.pumpWidget(_wrap(
-        SolidBuilder<_LoginVm, _LoginState>(
+        SolidProvider<_LoginVm>.value(
           value: vm,
-          builder: (_, state) {
-            if (state.isLoading) return const CircularProgressIndicator();
-            if (state.user != null)
-              return Text('Welcome ${state.user}',
+          child: SolidBuilder<_LoginVm, _LoginState>(
+            builder: (_, state) {
+              if (state.isLoading) return const CircularProgressIndicator();
+              if (state.user != null)
+                return Text('Welcome ${state.user}',
+                    textDirection: TextDirection.ltr);
+              return const Text('Please login',
                   textDirection: TextDirection.ltr);
-            return const Text('Please login', textDirection: TextDirection.ltr);
-          },
+            },
+          ),
         ),
       ));
 
       expect(find.text('Please login'), findsOneWidget);
 
       final future = vm.loginOk();
-      await tester.pump(); // trigger rebuild after push(isLoading: true)
+      await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       vm.completeLogin();
@@ -429,14 +440,16 @@ void main() {
     testWidgets('error state reflects after failed operation', (tester) async {
       final vm = _LoginVm();
       await tester.pumpWidget(_wrap(
-        SolidBuilder<_LoginVm, _LoginState>(
+        SolidProvider<_LoginVm>.value(
           value: vm,
-          builder: (context, state) {
-            if (state.error != null)
-              return Text('Error: ${state.error}',
-                  textDirection: TextDirection.ltr);
-            return const Text('ok', textDirection: TextDirection.ltr);
-          },
+          child: SolidBuilder<_LoginVm, _LoginState>(
+            builder: (context, state) {
+              if (state.error != null)
+                return Text('Error: ${state.error}',
+                    textDirection: TextDirection.ltr);
+              return const Text('ok', textDirection: TextDirection.ltr);
+            },
+          ),
         ),
       ));
 
@@ -450,10 +463,12 @@ void main() {
       final vm = _LoginVm()..setUserDirectly('demo@test.com');
       await tester.pumpWidget(
         MaterialApp(
-          home: SolidBuilder<_LoginVm, _LoginState>(
+          home: SolidProvider<_LoginVm>.value(
             value: vm,
-            builder: (context, state) => Text(state.user ?? 'logged out',
-                textDirection: TextDirection.ltr),
+            child: SolidBuilder<_LoginVm, _LoginState>(
+              builder: (context, state) => Text(state.user ?? 'logged out',
+                  textDirection: TextDirection.ltr),
+            ),
           ),
         ),
       );
@@ -507,13 +522,15 @@ void main() {
       int buildCount = 0;
 
       await tester.pumpWidget(_wrap(
-        SolidSelector<_MultiFieldVm, _MultiFieldState, int>(
+        SolidProvider<_MultiFieldVm>.value(
           value: vm,
-          selector: (s) => s.count,
-          builder: (context, count) {
-            buildCount++;
-            return Text('$count', textDirection: TextDirection.ltr);
-          },
+          child: SolidSelector<_MultiFieldVm, _MultiFieldState, int>(
+            selector: (s) => s.count,
+            builder: (context, count) {
+              buildCount++;
+              return Text('$count', textDirection: TextDirection.ltr);
+            },
+          ),
         ),
       ));
 
@@ -572,6 +589,139 @@ void main() {
       expect(s4.errorMessage, 'oops');
     });
   });
+
+  // ── SolidObserver ──────────────────────────────────────────────────────────
+  group('SolidObserver', () {
+    late SolidObserver originalObserver;
+
+    setUp(() {
+      originalObserver = Solid.observer;
+    });
+
+    tearDown(() {
+      Solid.observer = originalObserver;
+    });
+
+    test('onCreate is called when Solid is created', () {
+      final created = <Type>[];
+      Solid.observer = _TestObserver(
+        onCreateCb: (s) => created.add(s.runtimeType),
+      );
+      final vm = _CounterVm();
+      expect(created, contains(vm.runtimeType));
+      vm.dispose();
+    });
+
+    test('onDispose is called when Solid is disposed', () {
+      final disposed = <Type>[];
+      Solid.observer = _TestObserver(
+        onDisposeCb: (s) => disposed.add(s.runtimeType),
+      );
+      final vm = _CounterVm();
+      vm.dispose();
+      expect(disposed, contains(vm.runtimeType));
+    });
+
+    test('onChange on observer is called on push', () {
+      final changes = <(dynamic, dynamic)>[];
+      Solid.observer = _TestObserver(
+        onChangeCb: (_, prev, next) => changes.add((prev, next)),
+      );
+      final vm = _CounterVm();
+      vm.increment();
+      expect(changes.length, equals(1));
+      expect((changes[0].$1 as _CounterState).count, 0);
+      expect((changes[0].$2 as _CounterState).count, 1);
+      vm.dispose();
+    });
+
+    test('history records state changes', () {
+      final obs = SolidObserver(maxHistoryLength: 50);
+      Solid.observer = obs;
+      final vm = _CounterVm();
+      vm.increment();
+      vm.increment();
+      expect(obs.history.length, equals(2));
+      expect(obs.history[0].toString(), contains('_CounterVm'));
+      vm.dispose();
+    });
+
+    test('history respects maxHistoryLength', () {
+      final obs = SolidObserver(maxHistoryLength: 2);
+      Solid.observer = obs;
+      final vm = _CounterVm();
+      vm.increment();
+      vm.increment();
+      vm.increment();
+      expect(obs.history.length, equals(2)); // oldest dropped
+      vm.dispose();
+    });
+  });
+
+  // ── buildWhen ──────────────────────────────────────────────────────────────
+  group('buildWhen', () {
+    testWidgets('skips rebuild when buildWhen returns false', (tester) async {
+      final vm = _MultiFieldVm();
+      int buildCount = 0;
+
+      await tester.pumpWidget(_wrap(
+        SolidProvider<_MultiFieldVm>.value(
+          value: vm,
+          child: SolidBuilder<_MultiFieldVm, _MultiFieldState>(
+            buildWhen: (prev, curr) => prev.count != curr.count,
+            builder: (_, state) {
+              buildCount++;
+              return Text('${state.count}', textDirection: TextDirection.ltr);
+            },
+          ),
+        ),
+      ));
+
+      final initial = buildCount;
+
+      // Name change — buildWhen returns false, no rebuild
+      vm.setName('Alice');
+      await tester.pump();
+      expect(buildCount, equals(initial));
+
+      // Count change — buildWhen returns true, rebuilds
+      vm.incrementCount();
+      await tester.pump();
+      expect(buildCount, equals(initial + 1));
+      expect(find.text('1'), findsOneWidget);
+      vm.dispose();
+    });
+  });
+
+  // ── listenWhen ─────────────────────────────────────────────────────────────
+  group('listenWhen', () {
+    testWidgets('skips listener when listenWhen returns false', (tester) async {
+      final vm = _MultiFieldVm();
+      final calls = <int>[];
+
+      await tester.pumpWidget(_wrap(
+        SolidProvider<_MultiFieldVm>.value(
+          value: vm,
+          child: SolidListener<_MultiFieldVm, _MultiFieldState>(
+            listenWhen: (prev, curr) => prev.count != curr.count,
+            listener: (_, state) => calls.add(state.count),
+            child: const SizedBox(),
+          ),
+        ),
+      ));
+
+      // Name change — listenWhen returns false
+      vm.setName('Bob');
+      await tester.pump();
+      expect(calls, isEmpty);
+
+      // Count change — listenWhen returns true
+      vm.incrementCount();
+      await tester.pump();
+      expect(calls, equals([1]));
+      vm.dispose();
+    });
+  });
 }
 
 // =============================================================================
@@ -621,4 +771,26 @@ class _StatusState with StatusMixin {
     this.status = SolidStatus.initial,
     this.errorMessage,
   });
+}
+
+class _TestObserver extends SolidObserver {
+  final void Function(Solid<dynamic> solid)? onCreateCb;
+  final void Function(Solid<dynamic> solid, dynamic prev, dynamic next)?
+      onChangeCb;
+  final void Function(Solid<dynamic> solid)? onDisposeCb;
+
+  _TestObserver({this.onCreateCb, this.onChangeCb, this.onDisposeCb})
+      : super(maxHistoryLength: 0);
+
+  @override
+  void onCreate(Solid<dynamic> solid) => onCreateCb?.call(solid);
+
+  @override
+  void onChange(Solid<dynamic> solid, dynamic previous, dynamic next) {
+    super.onChange(solid, previous, next);
+    onChangeCb?.call(solid, previous, next);
+  }
+
+  @override
+  void onDispose(Solid<dynamic> solid) => onDisposeCb?.call(solid);
 }

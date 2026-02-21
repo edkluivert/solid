@@ -11,40 +11,43 @@ import 'solid_builder.dart';
 ///
 /// ```dart
 /// SolidConsumer<LoginViewModel, LoginState>(
+///   listenWhen: (prev, curr) => curr.error != null,
+///   buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
 ///   listener: (context, state) {
-///     // Fires on every push() — use for navigation, snackbars, etc.
-///     if (state.user != null) {
-///       Navigator.pushReplacementNamed(context, '/home');
-///     }
+///     if (state.error != null) showSnackBar(state.error!);
 ///   },
 ///   builder: (context, state) {
-///     // Rebuilds the widget on every push()
 ///     if (state.isLoading) return const CircularProgressIndicator();
-///     return LoginForm(onLogin: context.solid<LoginViewModel>().login);
+///     return LoginForm();
 ///   },
 /// )
 /// ```
 class SolidConsumer<T extends Solid<dynamic>, S> extends StatelessWidget {
-  /// Optional: if null, resolved from the nearest [SolidProvider<T>].
-  final T? value;
   final void Function(BuildContext context, S state) listener;
   final Widget Function(BuildContext context, S state) builder;
 
+  /// Optional filter for the listener. See [SolidListener.listenWhen].
+  final bool Function(S previous, S current)? listenWhen;
+
+  /// Optional filter for the builder. See [SolidBuilder.buildWhen].
+  final bool Function(S previous, S current)? buildWhen;
+
   const SolidConsumer({
     super.key,
-    this.value,
     required this.listener,
     required this.builder,
+    this.listenWhen,
+    this.buildWhen,
   });
 
   @override
   Widget build(BuildContext context) {
     return SolidListener<T, S>(
-      value: value,
       listener: listener,
+      listenWhen: listenWhen,
       child: SolidBuilder<T, S>(
-        value: value,
         builder: builder,
+        buildWhen: buildWhen,
       ),
     );
   }

@@ -5,31 +5,34 @@ import 'solid_provider.dart';
 
 /// Calls [listener] whenever the [Solid] instance pushes a new state of type [S], without rebuilding.
 ///
-/// [value] is optional — when omitted the nearest [SolidProvider<T>] is used.
+/// The nearest [SolidProvider<T>] is used to resolve the ViewModel automatically.
+///
+/// Use [listenWhen] to filter which state changes trigger the listener:
 ///
 /// ```dart
 /// SolidListener<LoginViewModel, LoginState>(
+///   listenWhen: (previous, current) => current.error != null,
 ///   listener: (context, state) {
-///     if (state.error != null) {
-///       ScaffoldMessenger.of(context).showSnackBar(
-///         SnackBar(content: Text(state.error!)),
-///       );
-///     }
+///     ScaffoldMessenger.of(context).showSnackBar(
+///       SnackBar(content: Text(state.error!)),
+///     );
 ///   },
 ///   child: LoginPage(),
 /// )
 /// ```
 class SolidListener<T extends Solid<dynamic>, S> extends StatefulWidget {
-  /// Optional: if null, resolved from the nearest [SolidProvider<T>].
-  final T? value;
   final Widget child;
   final void Function(BuildContext context, S state) listener;
 
+  /// Optional filter. Return `true` to call listener, `false` to skip.
+  /// When null, every state change triggers the listener.
+  final bool Function(S previous, S current)? listenWhen;
+
   const SolidListener({
     super.key,
-    this.value,
     required this.listener,
     required this.child,
+    this.listenWhen,
   });
 
   @override
@@ -44,7 +47,7 @@ class _SolidListenerState<T extends Solid<dynamic>, S>
   @override
   void initState() {
     super.initState();
-    _instance = widget.value ?? SolidProvider.of<T>(context);
+    _instance = SolidProvider.of<T>(context);
     _lastState = _instance.getOrNull<S>();
     _instance.addListener(_onChanged);
   }
@@ -52,7 +55,7 @@ class _SolidListenerState<T extends Solid<dynamic>, S>
   @override
   void didUpdateWidget(SolidListener<T, S> old) {
     super.didUpdateWidget(old);
-    final next = widget.value ?? SolidProvider.of<T>(context);
+    final next = SolidProvider.of<T>(context);
     if (next != _instance) {
       _instance.removeListener(_onChanged);
       _instance = next;
@@ -69,11 +72,15 @@ class _SolidListenerState<T extends Solid<dynamic>, S>
 
   void _onChanged() {
     final nextState = _instance.getOrNull<S>();
-    if (_lastState != nextState) {
+    if (_lastState != nextState && nextState != null) {
+      final previous = _lastState;
       _lastState = nextState;
-      if (_lastState != null) {
-        widget.listener(context, _lastState as S);
+      if (widget.listenWhen != null &&
+          previous != null &&
+          !widget.listenWhen!(previous, nextState)) {
+        return;
       }
+      widget.listener(context, nextState);
     }
   }
 

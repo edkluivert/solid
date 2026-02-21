@@ -5,24 +5,28 @@ import 'solid_provider.dart';
 
 /// Rebuilds [builder] whenever the [Solid] instance pushes a new state of type [S].
 ///
-/// [value] is optional — when omitted, the nearest [SolidProvider<T>] is
-/// used automatically. No [Builder] wrapper needed.
+/// The nearest [SolidProvider<T>] is used to resolve the ViewModel automatically.
+///
+/// Use [buildWhen] to filter which state changes trigger a rebuild:
 ///
 /// ```dart
-/// SolidBuilder<LoginViewModel, LoginState>(
-///   builder: (context, state) {
-///     if (state.isLoading) return const CircularProgressIndicator();
-///     if (state.user != null)  return WelcomeView(user: state.user!);
-///     return LoginForm(onLogin: context.solid<LoginViewModel>().login);
-///   },
+/// SolidBuilder<CounterViewModel, CounterState>(
+///   buildWhen: (previous, current) => previous.count != current.count,
+///   builder: (context, state) => Text('${state.count}'),
 /// )
 /// ```
 class SolidBuilder<T extends Solid<dynamic>, S> extends StatefulWidget {
-  /// Optional: if null, resolved from the nearest [SolidProvider<T>].
-  final T? value;
   final Widget Function(BuildContext context, S state) builder;
 
-  const SolidBuilder({super.key, this.value, required this.builder});
+  /// Optional filter. Return `true` to rebuild, `false` to skip.
+  /// When null, every state change triggers a rebuild.
+  final bool Function(S previous, S current)? buildWhen;
+
+  const SolidBuilder({
+    super.key,
+    required this.builder,
+    this.buildWhen,
+  });
 
   @override
   State<SolidBuilder<T, S>> createState() => _SolidBuilderState<T, S>();
@@ -36,7 +40,7 @@ class _SolidBuilderState<T extends Solid<dynamic>, S>
   @override
   void initState() {
     super.initState();
-    _instance = widget.value ?? SolidProvider.of<T>(context);
+    _instance = SolidProvider.of<T>(context);
     _lastState = _instance.getOrNull<S>();
     _instance.addListener(_onChanged);
   }
@@ -44,7 +48,7 @@ class _SolidBuilderState<T extends Solid<dynamic>, S>
   @override
   void didUpdateWidget(SolidBuilder<T, S> old) {
     super.didUpdateWidget(old);
-    final next = widget.value ?? SolidProvider.of<T>(context);
+    final next = SolidProvider.of<T>(context);
     if (next != _instance) {
       _instance.removeListener(_onChanged);
       _instance = next;
@@ -62,6 +66,14 @@ class _SolidBuilderState<T extends Solid<dynamic>, S>
   void _onChanged() {
     final nextState = _instance.getOrNull<S>();
     if (_lastState != nextState) {
+      final previous = _lastState;
+      if (widget.buildWhen != null &&
+          previous != null &&
+          nextState != null &&
+          !widget.buildWhen!(previous, nextState)) {
+        _lastState = nextState;
+        return;
+      }
       setState(() {
         _lastState = nextState;
       });
@@ -72,7 +84,7 @@ class _SolidBuilderState<T extends Solid<dynamic>, S>
   Widget build(BuildContext context) {
     if (_lastState == null) {
       throw StateError(
-          'State of type $S has not been initialized. Call push<$S>() on the generic Solid class $T first.');
+          'State of type $S has not been initialized. Call push<$S>() on $T first.');
     }
     return widget.builder(context, _lastState as S);
   }

@@ -3,7 +3,7 @@ description: >
   A lightweight, reactive state management library for Flutter.
   Inspired by SolidJS signals – fine-grained reactivity without code generation.
 version: 1.0.0
-repository: https://github.com/your-org/solid
+repository: https://github.com/edkluivert/solid
 
 environment:
   sdk: ^3.5.0

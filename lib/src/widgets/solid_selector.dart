@@ -15,9 +15,6 @@ import 'solid_provider.dart';
 /// )
 /// ```
 class SolidSelector<T extends Solid<dynamic>, S, R> extends StatefulWidget {
-  /// Optional: if null, resolved from the nearest [SolidProvider<T>].
-  final T? value;
-
   /// Extracts the slice of state to watch.
   final R Function(S state) selector;
 
@@ -26,7 +23,6 @@ class SolidSelector<T extends Solid<dynamic>, S, R> extends StatefulWidget {
 
   const SolidSelector({
     super.key,
-    this.value,
     required this.selector,
     required this.builder,
   });
@@ -44,7 +40,7 @@ class _SolidSelectorState<T extends Solid<dynamic>, S, R>
   @override
   void initState() {
     super.initState();
-    _instance = widget.value ?? SolidProvider.of<T>(context);
+    _instance = SolidProvider.of<T>(context);
     _computeSelected();
     _instance.addListener(_onChanged);
   }
@@ -52,7 +48,7 @@ class _SolidSelectorState<T extends Solid<dynamic>, S, R>
   @override
   void didUpdateWidget(SolidSelector<T, S, R> old) {
     super.didUpdateWidget(old);
-    final next = widget.value ?? SolidProvider.of<T>(context);
+    final next = SolidProvider.of<T>(context);
     if (next != _instance) {
       _instance.removeListener(_onChanged);
       _instance = next;

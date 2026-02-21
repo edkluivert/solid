@@ -24,7 +24,7 @@ Inspired by Kotlin's `ViewModel + StateFlow` pattern, Solid provides a clean arc
 dependencies:
   solid:
     git:
-      url: https://github.com/your-org/solid.git
+      url: https://github.com/edkluivert/solid
 ```
 
 ---
@@ -194,6 +194,55 @@ class TasksState with StatusMixin {
 ```
 
 Then use `state.isLoading`, `state.isSuccess`, `state.isFailure` anywhere.
+
+---
+
+## Filtering Rebuilds & Side Effects
+
+Use `buildWhen` and `listenWhen` to control exactly when widgets rebuild or fire:
+
+```dart
+SolidConsumer<LoginViewModel, LoginState>(
+  // Only rebuild when loading state changes
+  buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
+  // Only fire listener when there's a new error
+  listenWhen: (prev, curr) => curr.error != null && prev.error != curr.error,
+  listener: (context, state) => showSnackBar(state.error!),
+  builder: (context, state) {
+    if (state.isLoading) return const CircularProgressIndicator();
+    return LoginForm();
+  },
+)
+```
+
+---
+
+## SolidObserver
+
+A global observer that receives lifecycle callbacks for **every** `Solid` instance — similar to `Bloc.observer`:
+
+```dart
+class AppObserver extends SolidObserver {
+  @override
+  void onCreate(Solid solid) => debugPrint('Created: ${solid.runtimeType}');
+
+  @override
+  void onChange(Solid solid, dynamic previous, dynamic next) {
+    super.onChange(solid, previous, next); // records to history
+    debugPrint('${solid.runtimeType}: $previous → $next');
+  }
+
+  @override
+  void onDispose(Solid solid) => debugPrint('Disposed: ${solid.runtimeType}');
+}
+
+void main() {
+  Solid.observer = AppObserver();
+  runApp(MyApp());
+}
+```
+
+The observer also maintains a **state timeline** via `Solid.observer.history` — a ring buffer of recent `SolidChange` records, ready for a future DevTools extension.
 
 ---
 

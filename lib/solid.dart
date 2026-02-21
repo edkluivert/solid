@@ -32,6 +32,7 @@
 library solid;
 
 export 'src/solid.dart';
+export 'src/solid_observer.dart';
 export 'src/solid_status.dart';
 export 'src/widgets/solid_provider.dart';
 export 'src/widgets/solid_context_extension.dart';

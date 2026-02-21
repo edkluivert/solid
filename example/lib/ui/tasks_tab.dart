@@ -34,6 +34,7 @@ class TasksTab extends StatelessWidget {
           ],
         ),
         body: SolidBuilder<TasksViewModel, TasksState>(
+
           builder: (context, state) {
             final vm = context.solid<TasksViewModel>();
             if (state.tasks.isEmpty && !state.isLoading) {
