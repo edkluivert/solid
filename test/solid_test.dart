@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:solid/solid.dart';
+import 'package:solid_x/solid_x.dart';
 
 // =============================================================================
 // TEST VIEW-MODELS

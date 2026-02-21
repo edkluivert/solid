@@ -1,4 +1,4 @@
-# solid
+# solid_x
 
 A lightweight, reactive state management library for Flutter.
 
@@ -22,7 +22,7 @@ Inspired by Kotlin's `ViewModel + StateFlow` pattern, Solid provides a clean arc
 ```yaml
 # pubspec.yaml
 dependencies:
-  solid:
+  solid_x:
     git:
       url: https://github.com/edkluivert/solid
 ```

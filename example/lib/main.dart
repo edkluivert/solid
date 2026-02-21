@@ -3,7 +3,7 @@ import 'package:example/ui/cart_tab.dart';
 import 'package:example/ui/counter_tab.dart';
 import 'package:example/ui/tasks_tab.dart';
 import 'package:flutter/material.dart';
-import 'package:solid/solid.dart';
+import 'package:solid_x/solid_x.dart';
 
 import 'login_view_model.dart';
 

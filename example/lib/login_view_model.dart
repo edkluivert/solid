@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:solid/solid.dart';
+import 'package:solid_x/solid_x.dart';
 
 import 'user.dart';
 

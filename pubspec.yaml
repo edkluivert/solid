@@ -1,4 +1,4 @@
-name: solid
+name: solid_x
 description: >
   A lightweight, reactive state management library for Flutter.
   Inspired by SolidJS signals – fine-grained reactivity without code generation.

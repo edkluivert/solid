@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:solid/solid.dart';
+import 'package:solid_x/solid_x.dart';
 
 import '../counter_view_model.dart';
 
