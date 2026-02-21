@@ -1,4 +1,4 @@
-## 2.0.1
+## 2.0.2
 
 - **Major Redesign**: Solid is now a StateFlow/ViewModel pattern library.
 - **Added**: `SolidViewModel<S>` – single-state ViewModel base class with `emit(S)`.
