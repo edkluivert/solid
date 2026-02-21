@@ -1,7 +1,7 @@
 name: solid_x
 description: >
-  Inspired by Kotlin's `ViewModel + StateFlow` pattern, Solid provides a clean architecture to manage your application's state with zero code generation and zero boilerplate. Under the hood, **Solid is powered entirely by Flutter's native `ChangeNotifier`**, making it lightweight and incredibly efficient.
-version: 2.0.2
+  Inspired by Kotlin's `ViewModel + StateFlow` pattern, Solid provides a clean architecture to manage your application's state with zero code generation and zero boilerplate.
+version: 2.0.3
 homepage: https://github.com/edkluivert/solid
 repository: https://github.com/edkluivert/solid
 issue_tracker: https://github.com/edkluivert/solid/issues
