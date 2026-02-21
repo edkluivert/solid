@@ -2,8 +2,10 @@ name: solid_x
 description: >
   A lightweight, reactive state management library for Flutter.
   Inspired by SolidJS signals – fine-grained reactivity without code generation.
-version: 1.0.0
+version: 2.0.1
+homepage: https://github.com/edkluivert/solid
 repository: https://github.com/edkluivert/solid
+issue_tracker: https://github.com/edkluivert/solid/issues
 
 environment:
   sdk: ^3.5.0

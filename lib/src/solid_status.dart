@@ -23,6 +23,7 @@
 /// if (state.isLoading) return const CircularProgressIndicator();
 /// if (state.isFailure) return Text('Error: ${state.errorMessage}');
 /// ```
+library;
 
 /// Represents the status of an async operation.
 enum SolidStatus {
