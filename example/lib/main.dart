@@ -30,12 +30,13 @@ class SolidExampleApp extends StatelessWidget {
         ),
 
         home: SolidBuilder<LoginViewModel, LoginState>(
+          // Only rebuild when user changes (login/logout),
+          // not on loading or error changes.
+          buildWhen: (prev, curr) => prev.user != curr.user,
           builder: (context, state) {
-            // If we have a user, show the main application shell
             if (state.user != null) {
               return const _HomeShell();
             }
-            // Otherwise, show the global authentication screen
             return const AuthScreen();
           },
         ),

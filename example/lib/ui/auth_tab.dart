@@ -9,28 +9,24 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login'), centerTitle: true),
-      body: SolidConsumer<LoginViewModel, LoginState>(
-        listener: (context, state) {
-          if (state.error != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(state.error!),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-          }
-        },
-        builder: (context, state) {
-          if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return const _LoginForm();
-        },
+
+    return SolidListener<LoginViewModel, LoginState>(
+      listenWhen: (prev, curr) =>
+          curr.error != null && prev.error != curr.error,
+      listener: (context, state) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Login'), centerTitle: true),
+        body: const _LoginForm(),
       ),
     );
   }
@@ -115,12 +111,27 @@ class _LoginForm extends StatelessWidget {
             const SizedBox(height: 24),
 
             // This builder ONLY rebuilds when LoginFormState changes.
-            // LoginState changes (loading, error, user) don't trigger it.
             SolidBuilder<LoginViewModel, LoginFormState>(
               builder: (context, form) {
-                return FilledButton(
-                  onPressed: form.isValid ? vm.login : null,
-                  child: const Text('Sign in'),
+                return SolidBuilder<LoginViewModel, LoginState>(
+                  buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
+                  builder: (context, login) {
+                    return FilledButton(
+                      onPressed: form.isValid && !login.isLoading
+                          ? vm.login
+                          : null,
+                      child: login.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Sign in'),
+                    );
+                  },
                 );
               },
             ),
