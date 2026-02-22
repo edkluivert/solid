@@ -11,7 +11,8 @@ Inspired by Kotlin's `ViewModel + StateFlow` pattern, Solid provides a clean arc
 - **`update((s) => ...)`** – sugar that reads the current state, applies your function, and pushes.
 - **`onChange(previous, next)`** – overridable lifecycle hook for logging and debugging.
 - **Multi-state** – a single `Solid` can manage multiple independent state types with `push<S>()` and `get<S>()`.
-- **6 widgets** – `SolidProvider`, `SolidBuilder`, `SolidListener`, `SolidConsumer`, `SolidSelector`, and `context.solid<T>()`.
+- **`Mutation<T>`** – declare async functions that auto-track `initial → loading → success / error / empty` with zero boilerplate.
+- **7 widgets** – `SolidProvider`, `SolidBuilder`, `SolidListener`, `SolidConsumer`, `SolidSelector`, `MutationBuilder`, and `context.solid<T>()`.
 - **`SolidStatus` + `StatusMixin`** – opt-in enum for standardized loading/success/failure patterns.
 - **Powered by `ChangeNotifier`** – zero hidden magic.
 
@@ -155,6 +156,83 @@ class CounterView extends StatelessWidget {
 
 ---
 
+## Mutation
+
+`Mutation<T>` lets you declare async functions directly in your ViewModel that automatically track their full lifecycle — no manual `isLoading`, `error`, or `data` fields needed.
+
+### Declaring mutations
+
+```dart
+class AuthViewModel extends Solid<AuthState> {
+  AuthViewModel() : super(const AuthState());
+
+  // Throw-based — exception becomes the error state
+  late final fetchUser = mutation<User>(() async => userRepo.getUser());
+
+  // Void throw-based — no return value, still tracks loading/error
+  late final logout = mutation<void>(() async => authRepo.logout());
+
+  // Either-based — Left becomes error, Right becomes success
+  // Compatible with dartz Either<L, R> or any object with fold()
+  late final login = mutationEither<String, User>(
+    () async => authRepo.login(email, password), // Either<String, User>
+  );
+}
+```
+
+### Rendering mutations in the UI
+
+```dart
+MutationBuilder<User>(
+  mutation: vm.fetchUser,
+
+  initial: (ctx) => TextButton(
+    onPressed: vm.fetchUser.call, // trigger the mutation
+    child: const Text('Load User'),
+  ),
+  loading: (ctx) => const CircularProgressIndicator(),
+  success: (ctx, user) => Text('Hello ${user.name}'),
+  error:   (ctx, e)    => Text('Failed: $e'),
+  empty:   (ctx)       => const Text('No user found'), // optional
+
+  // Side-effect hooks (don't rebuild, just fire once)
+  onSuccess: (ctx, user) => Navigator.pushNamed(ctx, '/home'),
+  onError:   (ctx, e)    => ScaffoldMessenger.of(ctx).showSnackBar(...),
+
+  // Optional rebuild filter
+  buildWhen: (prev, curr) => curr is! MutationLoading,
+)
+```
+
+### Void mutations
+
+For `mutation<void>`, the `success` callback receives a `_` (ignored) parameter:
+
+```dart
+MutationBuilder<void>(
+  mutation: vm.logout,
+  initial: (ctx) => TextButton(onPressed: vm.logout.call, child: const Text('Logout')),
+  loading: (ctx) => const CircularProgressIndicator(),
+  success: (ctx, _) => const Text('Signed out'),
+  error:   (ctx, e) => Text('Error: $e'),
+)
+```
+
+### Mutation state lifecycle
+
+```
+initial ──.call()──▶ loading ──▶ success(data)
+                             ├──▶ empty          ← null return
+                             └──▶ error(e)       ← thrown / Left
+```
+
+Use `.reset()` to return a mutation to `initial`:
+```dart
+TextButton(onPressed: vm.fetchUser.reset, child: const Text('Reset'))
+```
+
+---
+
 ## Widget Reference
 
 | Widget | Purpose | Bloc Equivalent |
@@ -164,6 +242,7 @@ class CounterView extends StatelessWidget {
 | `SolidListener<T, S>`| Side effects (navigation, snackbars) | `BlocListener` |
 | `SolidConsumer<T, S>`| Builder + listener combined | `BlocConsumer` |
 | `SolidSelector<T, S, R>`| Rebuild only when a **slice** of state changes | `BlocSelector` |
+| `MutationBuilder<T>` | Render per-state UI for a `Mutation<T>` | — |
 
 Access the ViewModel directly with `context.solid<T>()`:
 ```dart
@@ -248,4 +327,4 @@ The observer also maintains a **state timeline** via `Solid.observer.history` �
 
 ## Example
 
-See the [`example/`](example/) directory for a full four-tab demo showcasing Counter, Tasks, Auth (login/logout with multi-state form validation), and Cart flows.
+See the [`example/`](example/) directory for a full five-tab demo showcasing Counter, Tasks, Auth (login/logout with multi-state form validation), Cart, and **Mutation** (all mutation variants with live error simulation).

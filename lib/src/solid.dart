@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'mutation.dart';
 import 'solid_observer.dart';
 
 /// A reactive state management base class for Flutter.
@@ -89,6 +90,35 @@ abstract class Solid<State> extends ChangeNotifier {
   @protected
   @mustCallSuper
   void onChange(dynamic previous, dynamic next) {}
+
+  // ── Mutation helpers ────────────────────────────────────────────────────
+
+  /// Creates a throw-based [Mutation] owned by this ViewModel.
+  ///
+  /// ```dart
+  /// late final fetchUser = mutation<User>(() async => repo.getUser());
+  /// late final logout    = mutation<void>(() async => repo.logout());
+  /// ```
+  ///
+  /// If [fn] throws, the mutation transitions to [MutationError].
+  @protected
+  Mutation<T> mutation<T>(Future<T> Function() fn) => createMutation<T>(fn);
+
+  /// Creates an Either-based [Mutation] owned by this ViewModel.
+  ///
+  /// ```dart
+  /// late final login = mutationEither<String, User>(
+  ///   () async => repo.login(email, pass), // Either<String, User>
+  /// );
+  /// ```
+  ///
+  /// - `Left(l)` → [MutationError] with `l` as the typed error.
+  /// - `Right(r)` → [MutationSuccess] (or [MutationEmpty] when r is null).
+  @protected
+  Mutation<T> mutationEither<L extends Object, T>(
+    Future<dynamic> Function() fn,
+  ) =>
+      createMutationEither<L, T>(fn);
 
   @override
   void dispose() {

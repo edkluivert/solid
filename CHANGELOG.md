@@ -1,3 +1,12 @@
+## 2.1.0
+
+- **Added**: `Mutation<T>` — a reactive wrapper around async functions that automatically tracks `initial → loading → success / empty / error` lifecycle, with zero manual state management.
+- **Added**: `mutation<T>(fn)` helper on `Solid` — throw-based, declares a mutation in one line inside a ViewModel.
+- **Added**: `mutationEither<L, T>(fn)` helper on `Solid` — Either-based, compatible with `dartz` `Either<L, R>`, Left maps to error state, Right maps to success.
+- **Added**: `MutationBuilder<T>` widget — renders the correct widget per mutation state with optional `onSuccess`/`onError` side-effect hooks and `buildWhen` filtering.
+- **Added**: `MutationState<T>` sealed class with 5 subtypes: `MutationInitial`, `MutationLoading`, `MutationSuccess`, `MutationEmpty`, `MutationError`.
+- **Updated**: Example app — new **Mutation** tab (⚡) demonstrating all mutation variants.
+
 ## 2.0.3
 
 - **Major Redesign**: Solid is now a StateFlow/ViewModel pattern library.

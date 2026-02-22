@@ -1,6 +1,7 @@
 import 'package:example/ui/auth_tab.dart';
 import 'package:example/ui/cart_tab.dart';
 import 'package:example/ui/counter_tab.dart';
+import 'package:example/ui/mutation_tab.dart';
 import 'package:example/ui/tasks_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:solid_x/solid_x.dart';
@@ -60,7 +61,13 @@ class _HomeShellState extends State<_HomeShell> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: const [CounterTab(), TasksTab(), ProfileTab(), CartTab()],
+        children: const [
+          CounterTab(),
+          TasksTab(),
+          ProfileTab(),
+          CartTab(),
+          MutationTab(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -78,6 +85,10 @@ class _HomeShellState extends State<_HomeShell> {
           NavigationDestination(
             icon: Icon(Icons.shopping_cart_outlined),
             label: 'Cart',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bolt_outlined),
+            label: 'Mutation',
           ),
         ],
       ),
