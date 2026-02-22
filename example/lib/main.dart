@@ -1,6 +1,7 @@
 import 'package:example/ui/auth_tab.dart';
 import 'package:example/ui/cart_tab.dart';
 import 'package:example/ui/counter_tab.dart';
+import 'package:example/ui/form_tab.dart';
 import 'package:example/ui/mutation_tab.dart';
 import 'package:example/ui/tasks_tab.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,7 @@ class _HomeShellState extends State<_HomeShell> {
           ProfileTab(),
           CartTab(),
           MutationTab(),
+          FormTab(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -89,6 +91,10 @@ class _HomeShellState extends State<_HomeShell> {
           NavigationDestination(
             icon: Icon(Icons.bolt_outlined),
             label: 'Mutation',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.dynamic_form_outlined),
+            label: 'Form',
           ),
         ],
       ),
