@@ -15,8 +15,9 @@ class CounterTab extends StatelessWidget {
           if (state.count != 0 && state.count % 10 == 0) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('🎉 Milestone: ${state.count}!'),
-                duration: const Duration(seconds: 2),
+                content: Text('Milestone: ${state.count}!'),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 1),
               ),
             );
           }

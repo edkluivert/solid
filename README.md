@@ -1,4 +1,4 @@
-# solid_x
+# SOLID_X
 
 A lightweight, reactive state management library for Flutter.
 
@@ -189,7 +189,7 @@ MutationBuilder<User>(
   initial: (ctx) => TextButton(
     onPressed: vm.fetchUser.call, // trigger the mutation
     child: const Text('Load User'),
-  ),
+  ), // NOTE: `initial` is optional. If omitted, the mutation auto-triggers on first build!
   loading: (ctx) => const CircularProgressIndicator(),
   success: (ctx, user) => Text('Hello ${user.name}'),
   error:   (ctx, e)    => Text('Failed: $e'),

@@ -1,3 +1,7 @@
+## 2.1.1
+
+- **Changed**: `initial` parameter in `MutationBuilder` is now optional. If omitted, the mutation is automatically triggered in `initState` and the widget falls back to displaying the `loading` builder state until the mutation resolves.
+
 ## 2.1.0
 
 - **Added**: `Mutation<T>` — a reactive wrapper around async functions that automatically tracks `initial → loading → success / empty / error` lifecycle, with zero manual state management.

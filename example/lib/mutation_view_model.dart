@@ -46,6 +46,12 @@ class _FakeRepo {
     }
     return const _Either.left('Wrong email or password');
   }
+
+  /// Integer value for auto-trigger demo.
+  Future<int> fetchUsersCount() async {
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    return 42;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -101,4 +107,7 @@ class MutationViewModel extends Solid<MutationDemoState> {
   late final loginEitherFail = mutationEither<String, User>(
     () => _repo.loginEither('wrong@email.com', 'bad'),
   );
+
+  // 5. Auto-trigger — demos optional initial builder
+  late final fetchUsersCount = mutation<int>(() => _repo.fetchUsersCount());
 }

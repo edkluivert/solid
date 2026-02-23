@@ -65,7 +65,9 @@ class MutationBuilder<T> extends StatefulWidget {
   // ── Builder callbacks ─────────────────────────────────────────────────────
 
   /// Rendered while the mutation is in [MutationInitial] state.
-  final Widget Function(BuildContext context) initial;
+  /// If omitted, the mutation is triggered automatically on first build,
+  /// and [loading] is rendered instead.
+  final Widget Function(BuildContext context)? initial;
 
   /// Rendered while the mutation is in [MutationLoading] state.
   final Widget Function(BuildContext context) loading;
@@ -132,7 +134,7 @@ class MutationBuilder<T> extends StatefulWidget {
   const MutationBuilder({
     super.key,
     required this.mutation,
-    required this.initial,
+    this.initial,
     required this.loading,
     required this.success,
     required this.error,
@@ -160,6 +162,7 @@ class _MutationBuilderState<T> extends State<MutationBuilder<T>> {
     super.initState();
     _lastState = widget.mutation.state;
     widget.mutation.addListener(_onChanged);
+    _checkAutoTrigger();
   }
 
   @override
@@ -169,6 +172,17 @@ class _MutationBuilderState<T> extends State<MutationBuilder<T>> {
       old.mutation.removeListener(_onChanged);
       _lastState = widget.mutation.state;
       widget.mutation.addListener(_onChanged);
+      _checkAutoTrigger();
+    } else if (old.initial != null && widget.initial == null) {
+      _checkAutoTrigger();
+    }
+  }
+
+  void _checkAutoTrigger() {
+    if (widget.initial == null && _lastState is MutationInitial<T>) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.mutation.execute();
+      });
     }
   }
 
@@ -179,6 +193,8 @@ class _MutationBuilderState<T> extends State<MutationBuilder<T>> {
   }
 
   void _onChanged() {
+    if (!mounted) return;
+
     final next = widget.mutation.state;
     final previous = _lastState;
 
@@ -219,11 +235,14 @@ class _MutationBuilderState<T> extends State<MutationBuilder<T>> {
   Widget build(BuildContext context) {
     final s = _lastState;
     return switch (s) {
-      MutationInitial<T>() => widget.initial(context),
+      MutationInitial<T>() =>
+        widget.initial?.call(context) ?? widget.loading(context),
       MutationLoading<T>() => widget.loading(context),
       MutationSuccess<T>() => _buildSuccess(context, s.data),
       MutationError<T>() => widget.error(context, s.error),
-      _ => widget.initial(context),
+      MutationEmpty<T>() =>
+        widget.empty?.call(context) ?? const SizedBox.shrink(),
+      _ => widget.initial?.call(context) ?? widget.loading(context),
     };
   }
 

@@ -73,6 +73,15 @@ class _MutationBody extends StatelessWidget {
         const SizedBox(height: 8),
         _LoginEitherCard(vm: vm, succeed: false),
 
+        // ── Card 5: Auto-trigger ────────────────────────────────────────────
+        _SectionLabel(
+          color: Colors.teal,
+          tag: 'mutation<int> (no initial)',
+          description: 'Auto-triggers on first build if initial is omitted',
+        ),
+        const SizedBox(height: 8),
+        _AutoTriggerCard(vm: vm),
+
         const SizedBox(height: 32),
       ],
     );
@@ -99,9 +108,9 @@ class _FetchUserCard extends StatelessWidget {
         listenWhen: (prev, curr) => curr is! MutationInitial,
         listener: (ctx, state) {
           final msg = switch (state) {
-            MutationLoading() => '⏳ Fetching user…',
-            MutationSuccess() => '✅ User loaded',
-            MutationError() => '❌ ${(state as MutationError).error}',
+            MutationLoading() => 'Fetching user…',
+            MutationSuccess() => 'User loaded',
+            MutationError() => 'Error: ${(state as MutationError).error}',
             _ => null,
           };
           if (msg != null) _snack(ctx, msg);
@@ -140,9 +149,9 @@ class _FetchTeamCard extends StatelessWidget {
 
         // list.isEmpty triggers the empty builder
         emptyWhen: (team) => team.isEmpty,
-        listener: (ctx,state){
-          if(state is MutationSuccess<List<User>>){
-            if(state.data.length==2){
+        listener: (ctx, state) {
+          if (state is MutationSuccess<List<User>>) {
+            if (state.data.length == 2) {
               print('okayyyyyy');
             }
           }
@@ -214,8 +223,8 @@ class _DeleteUserCard extends StatelessWidget {
       borderColor: color,
       child: MutationBuilder<void>(
         mutation: vm.deleteUser,
-        onSuccess: (ctx, _) => _snack(ctx, '✅ User deleted!'),
-        onError: (ctx, e) => _snack(ctx, '❌ $e', isError: true),
+        onSuccess: (ctx, _) => _snack(ctx, 'User deleted!'),
+        onError: (ctx, e) => _snack(ctx, 'Error: $e', isError: true),
         initial: (ctx) => _TriggerButton(
           label: 'Delete User',
           icon: Icons.delete_outline,
@@ -482,6 +491,48 @@ class _ErrorTile extends StatelessWidget {
         ),
         TextButton(onPressed: onRetry, child: const Text('Retry')),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card 5 — Auto-trigger
+// ---------------------------------------------------------------------------
+
+class _AutoTriggerCard extends StatelessWidget {
+  final MutationViewModel vm;
+  const _AutoTriggerCard({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      borderColor: Colors.teal,
+      child: MutationBuilder<int>(
+        mutation: vm.fetchUsersCount,
+        // No initial builder! It will auto-trigger and show loading.
+        loading: (ctx) => const _Spinner(label: 'Auto-loading data…'),
+        success: (ctx, count) => Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.analytics_outlined, color: Colors.teal),
+                const SizedBox(width: 8),
+                Text('Total users: $count'),
+              ],
+            ),
+            TextButton(
+              onPressed: vm.fetchUsersCount.call,
+              child: const Text('Reload'),
+            ),
+          ],
+        ),
+        error: (ctx, e) => _ErrorTile(
+          message: '$e',
+          color: Colors.teal,
+          onRetry: vm.fetchUsersCount.call,
+        ),
+      ),
     );
   }
 }

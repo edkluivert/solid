@@ -18,7 +18,7 @@ class CartTab extends StatelessWidget {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(
-                  content: Text('✅ Order placed! Ref: ${state.checkoutRef}'),
+                  content: Text('Order placed! Ref: ${state.checkoutRef}'),
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 4),
