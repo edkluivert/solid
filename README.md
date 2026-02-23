@@ -50,7 +50,7 @@ class CounterState {
 ```
 
 ### 2. Define your ViewModel
-Extend `Solid<State>` and use `push()` or `update()` to change state. You get a natively typed `.state` getter, just like Cubit.
+Extend `Solid<State>` and use `emit()` or `update()` to change state. You get a natively typed `.state` getter, just like Cubit.
 
 ```dart
 class CounterViewModel extends Solid<CounterState> {
@@ -63,9 +63,9 @@ class CounterViewModel extends Solid<CounterState> {
 
   Future<void> resetAsync() async {
     if (state.isResetting) return;
-    push(state.copyWith(isResetting: true));
+    emit(state.copyWith(isResetting: true));
     await Future.delayed(const Duration(milliseconds: 600));
-    push(const CounterState());
+    emit(const CounterState());
   }
 
   // Optional: lifecycle hook for debugging
@@ -109,11 +109,13 @@ SolidBuilder<LoginViewModel, LoginFormState>(
 ```
 
 ### 4. Provide it
-Use `SolidProvider` to make the ViewModel available to the widget tree.
+Use `SolidProvider` to make the ViewModel available to the widget tree. You can also use `onReady` to trigger initial events safely after the first frame.
 
 ```dart
 SolidProvider<CounterViewModel>(
   create: CounterViewModel.new,
+  onReady: (context, vm) => vm.loadInitialData(), // Fires safely after first frame
+  onDispose: (context, vm) => print('Disposed!'),
   child: CounterView(),
 )
 ```

@@ -1,3 +1,8 @@
+## 2.1.2
+
+- **Added**: `emit(S)` helper method on `Solid<S>` to safely update the primary state without Dart generic inference issues when pushing subclasses.
+- **Added**: `onReady` and `onDispose` callbacks to `SolidProvider` and `SolidProvider.value` to facilitate firing initial events (like API calls) safely after the first frame renders.
+
 ## 2.1.1
 
 - **Changed**: `initial` parameter in `MutationBuilder` is now optional. If omitted, the mutation is automatically triggered in `initState` and the widget falls back to displaying the `loading` builder state until the mutation resolves.

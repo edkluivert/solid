@@ -63,6 +63,21 @@ abstract class Solid<State> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates the primary state and notifies listeners.
+  ///
+  /// This is identical to [push], but specialized for the primary [State] type
+  /// to avoid generic type inference issues when pushing subclasses.
+  ///
+  /// ```dart
+  /// // Instead of:
+  /// push(FirstTimeUser()); // Dart infers S as FirstTimeUser
+  ///
+  /// // Write:
+  /// emit(FirstTimeUser()); // Correctly updates the primary AuthState
+  /// ```
+  @protected
+  void emit(State newState) => push<State>(newState);
+
   /// Convenience method that reads the current primary [state], applies [fn],
   /// and pushes the result.
   ///

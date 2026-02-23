@@ -52,9 +52,19 @@ class SolidProvider<T extends ChangeNotifier> extends StatefulWidget {
   final T? _value;
   final Widget child;
 
+  /// Optional callback executed after the first frame is rendered.
+  /// Useful for triggering initial events, navigations, or API calls
+  /// after descendants like [SolidListener] have subscribed.
+  final void Function(BuildContext context, T value)? onReady;
+
+  /// Optional callback executed when the provider is disposed.
+  final void Function(BuildContext context, T value)? onDispose;
+
   const SolidProvider({
     super.key,
     required T Function() create,
+    this.onReady,
+    this.onDispose,
     required this.child,
   })  : _create = create,
         _value = null;
@@ -62,6 +72,8 @@ class SolidProvider<T extends ChangeNotifier> extends StatefulWidget {
   const SolidProvider.value({
     super.key,
     required T value,
+    this.onReady,
+    this.onDispose,
     required this.child,
   })  : _create = null,
         _value = value;
@@ -70,9 +82,19 @@ class SolidProvider<T extends ChangeNotifier> extends StatefulWidget {
   /// Preserves the concrete generic [T] — used by [MultiSolidProvider].
   SolidProvider<T> _withChild(Widget newChild) {
     if (_value != null) {
-      return SolidProvider<T>.value(value: _value, child: newChild);
+      return SolidProvider<T>.value(
+        value: _value,
+        onReady: onReady,
+        onDispose: onDispose,
+        child: newChild,
+      );
     }
-    return SolidProvider<T>(create: _create!, child: newChild);
+    return SolidProvider<T>(
+      create: _create!,
+      onReady: onReady,
+      onDispose: onDispose,
+      child: newChild,
+    );
   }
 
   @override
@@ -109,10 +131,18 @@ class _SolidProviderState<T extends ChangeNotifier>
       _instance = widget._create!();
       _owns = true;
     }
+
+    if (widget.onReady != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onReady!(context, _instance);
+      });
+    }
   }
 
   @override
   void dispose() {
+    widget.onDispose?.call(context, _instance);
     if (_owns) _instance.dispose();
     super.dispose();
   }

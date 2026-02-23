@@ -9,7 +9,6 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return SolidListener<LoginViewModel, LoginState>(
       listenWhen: (prev, curr) =>
           curr.error != null && prev.error != curr.error,
