@@ -18,7 +18,7 @@ class SolidExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SolidProvider<LoginViewModel>(
+    return SolidProvider(
       create: LoginViewModel.new,
       child: MaterialApp(
         title: 'Solid Example',
