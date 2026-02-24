@@ -1,7 +1,7 @@
 ## 2.1.3
 
-- **Changed**: `emit(S)` and `Push<S>` were merged into one function for better readability and maintainability.
-
+- **Changed**: `emit(S)` and `Push<S>` have been merged into a single method to improve readability and maintainability.
+- **Added**: `isDisposed` flag for safely determining ViewModel lifecycle state.
 
 ## 2.1.2
 
