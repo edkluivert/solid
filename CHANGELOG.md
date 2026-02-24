@@ -1,3 +1,8 @@
+## 2.1.3
+
+- **Changed**: `emit(S)` and `Push<S>` were merged into one function for better readability and maintainability.
+
+
 ## 2.1.2
 
 - **Added**: `emit(S)` helper method on `Solid<S>` to safely update the primary state without Dart generic inference issues when pushing subclasses.
