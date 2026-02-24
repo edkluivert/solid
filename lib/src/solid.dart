@@ -30,6 +30,11 @@ abstract class Solid<State> extends ChangeNotifier {
 
   final Map<Type, dynamic> _states = {};
 
+  bool _isDisposed = false;
+
+  /// Whether this ViewModel has been disposed.
+  bool get isDisposed => _isDisposed;
+
   /// Retrieves the primary state of this [Solid].
   State get state => get<State>();
 
@@ -49,34 +54,25 @@ abstract class Solid<State> extends ChangeNotifier {
     return _states[S] as S?;
   }
 
-  /// Updates the state of type [S] to [newState] and notifies listeners.
+  /// Updates the state to [newState] and notifies listeners.
   ///
-  /// If [newState] is identical to the current state of type [S], no
-  /// notification is fired.
+  /// If the new state is a subtype of the primary [State] type, it correctly
+  /// updates the primary state to avoid generic type inference issues when
+  /// pushing subclasses. For secondary state types [S], it updates their
+  /// respective states.
+  ///
+  /// If [newState] is equal by object value to the current state, no notification is fired.
   @protected
   void push<S>(S newState) {
-    final previous = _states[S];
-    if (identical(previous, newState)) return;
-    _states[S] = newState;
+    if (_isDisposed) return;
+    final type = (newState is State) ? State : S;
+    final previous = _states[type];
+    if (previous == newState) return;
+    _states[type] = newState;
     onChange(previous, newState);
     Solid.observer.onChange(this, previous, newState);
     notifyListeners();
   }
-
-  /// Updates the primary state and notifies listeners.
-  ///
-  /// This is identical to [push], but specialized for the primary [State] type
-  /// to avoid generic type inference issues when pushing subclasses.
-  ///
-  /// ```dart
-  /// // Instead of:
-  /// push(FirstTimeUser()); // Dart infers S as FirstTimeUser
-  ///
-  /// // Write:
-  /// emit(FirstTimeUser()); // Correctly updates the primary AuthState
-  /// ```
-  @protected
-  void emit(State newState) => push<State>(newState);
 
   /// Convenience method that reads the current primary [state], applies [fn],
   /// and pushes the result.
@@ -137,6 +133,7 @@ abstract class Solid<State> extends ChangeNotifier {
 
   @override
   void dispose() {
+    _isDisposed = true;
     Solid.observer.onDispose(this);
     super.dispose();
   }

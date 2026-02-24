@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
 import 'package:solid_x/solid_x.dart';
 
@@ -49,7 +48,7 @@ class CompanyInput extends FormzInput<String, CompanyValidationError> {
 // State
 // ---------------------------------------------------------------------------
 
-class ContactFormState extends Equatable {
+class ContactFormState {
   final NameInput name;
   final EmailInput email;
   final CompanyInput company;
@@ -82,9 +81,6 @@ class ContactFormState extends Equatable {
       errorMessage: errorMessage,
     );
   }
-
-  @override
-  List<Object?> get props => [name, email, company, status, errorMessage];
 }
 
 // ---------------------------------------------------------------------------

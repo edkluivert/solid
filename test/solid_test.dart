@@ -237,11 +237,10 @@ void main() {
 
       await tester.pumpWidget(_wrap(
         MultiSolidProvider(
-          providers: [
+          providers: const [
             SolidProvider<_CounterVm>(
-                create: _CounterVm.new, child: const SizedBox()),
-            SolidProvider<_NameVm>(
-                create: _NameVm.new, child: const SizedBox()),
+                create: _CounterVm.new, child: SizedBox()),
+            SolidProvider<_NameVm>(create: _NameVm.new, child: SizedBox()),
           ],
           child: Builder(builder: (ctx) {
             counter = ctx.solid<_CounterVm>();
@@ -413,10 +412,13 @@ void main() {
           value: vm,
           child: SolidBuilder<_LoginVm, _LoginState>(
             builder: (_, state) {
-              if (state.isLoading) return const CircularProgressIndicator();
-              if (state.user != null)
+              if (state.isLoading) {
+                return const CircularProgressIndicator();
+              }
+              if (state.user != null) {
                 return Text('Welcome ${state.user}',
                     textDirection: TextDirection.ltr);
+              }
               return const Text('Please login',
                   textDirection: TextDirection.ltr);
             },
@@ -444,9 +446,10 @@ void main() {
           value: vm,
           child: SolidBuilder<_LoginVm, _LoginState>(
             builder: (context, state) {
-              if (state.error != null)
+              if (state.error != null) {
                 return Text('Error: ${state.error}',
                     textDirection: TextDirection.ltr);
+              }
               return const Text('ok', textDirection: TextDirection.ltr);
             },
           ),

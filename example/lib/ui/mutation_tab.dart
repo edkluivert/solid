@@ -152,7 +152,7 @@ class _FetchTeamCard extends StatelessWidget {
         listener: (ctx, state) {
           if (state is MutationSuccess<List<User>>) {
             if (state.data.length == 2) {
-              print('okayyyyyy');
+              debugPrint('okayyyyyy');
             }
           }
         },

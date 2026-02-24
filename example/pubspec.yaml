@@ -33,7 +33,7 @@ dependencies:
   solid_x:
     path: ../
   formz: ^0.8.0
-  equatable: ^2.0.8
+ 
 
 dev_dependencies:
   flutter_test:
